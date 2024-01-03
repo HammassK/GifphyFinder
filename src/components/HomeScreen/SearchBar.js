@@ -3,27 +3,34 @@ import React from "react";
 import { Input } from "native-base";
 import { Ionicons } from "@expo/vector-icons";
 
-const SearchBar = () => {
+const SearchBar = ({ searchQuery, setSearchQuery }) => {
   return (
     <View style={styles.searchContainer}>
       <Input
         variant="unstyled"
         placeholder="Search"
         size={"xl"}
-        value={""}
+        value={searchQuery}
         _disabled={{
           opacity: 1,
         }}
+        onChangeText={(text) => setSearchQuery(text)}
         // eslint-disable-next-line react-native/no-inline-styles
         style={{ fontSize: 18 }}
         InputRightElement={
-          <TouchableOpacity>
-            <Ionicons
-              name={"search-outline"}
-              size={22}
-              style={{ right: "50%" }}
-            />
-          </TouchableOpacity>
+          searchQuery !== "" ? (
+            <TouchableOpacity onPress={() => setSearchQuery("")}>
+              <Ionicons name={"close"} size={22} style={{ right: "50%" }} />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity>
+              <Ionicons
+                name={"search-outline"}
+                size={22}
+                style={{ right: "50%" }}
+              />
+            </TouchableOpacity>
+          )
         }
       />
     </View>
