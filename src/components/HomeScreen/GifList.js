@@ -1,22 +1,35 @@
-import React from "react";
-import { Text, FlatList, Image, View, StyleSheet } from "react-native";
+import { Skeleton } from "native-base";
+import React, { useEffect, useState } from "react";
+import { FlatList, Image, View, StyleSheet, Text } from "react-native";
 
-const GifList = ({ list }) => {
+const GifList = ({ list, loadMore }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
       <Text>{item.title}</Text>
-      <Image
-        source={{ uri: item.images.original.url }}
-        style={styles.gifImage}
-      />
+      <Skeleton h="40" isLoaded={isLoaded} style={styles.gifImage}>
+        <Image
+          source={{ uri: item.images.original.url }}
+          style={styles.gifImage}
+        />
+      </Skeleton>
     </View>
   );
+
+  useEffect(() => {
+    setTimeout(() => {
+      setIsLoaded(true);
+    }, 3000);
+  }, []);
 
   return (
     <FlatList
       data={list}
       renderItem={renderItem}
-      keyExtractor={(item) => item.id.toString()}
+      keyExtractor={() => Math.random().toString(36).substring(7)}
+      onEndReached={loadMore}
+      onEndReachedThreshold={0.1}
     />
   );
 };

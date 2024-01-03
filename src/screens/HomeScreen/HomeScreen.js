@@ -1,5 +1,7 @@
+// screens/HomeScreen.js
+
 import React, { useState, useCallback, useEffect } from "react";
-import { Text } from "react-native";
+import { Text, FlatList } from "react-native";
 import Header from "../../components/HomeScreen/Header";
 import MainViewWrapper from "../../components/common/MainViewWrapper";
 import SearchBar from "../../components/HomeScreen/SearchBar";
@@ -10,35 +12,47 @@ const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [gifList, setGifList] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [offset, setOffset] = useState(50);
 
   const handleGifSearch = useCallback(async () => {
     if (searchQuery.trim() === "") {
-      // If the search query is empty, you may want to handle it accordingly
       setGifList([]);
       setIsLoaded(false);
       return;
     }
 
     try {
-      const result = await getSearchResult(searchQuery);
-      setGifList(result?.data); // Assuming the API response contains the list of gifs
+      const result = await getSearchResult(searchQuery, offset);
+      // Add a unique identifier to each item
+      const uniqueKeyedList = result?.data.map((item, index) => ({
+        ...item,
+        uniqueKey: item.id || index,
+      }));
+      setGifList((prevList) => {
+        const newList = [...prevList, ...uniqueKeyedList];
+        return newList;
+      });
       setIsLoaded(true);
     } catch (err) {
       console.log("===========err=========>", err);
       setGifList([]);
       setIsLoaded(true);
     }
-  }, [searchQuery]);
+  }, [searchQuery, offset]);
+
+  const loadMore = () => {
+    setOffset((prevOffset) => prevOffset + 25); // Assuming the limit is 25
+  };
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
       handleGifSearch();
-    }, 300); // Adjust the debounce delay as needed
+    }, 300);
 
     return () => {
       clearTimeout(debounceTimer);
     };
-  }, [searchQuery, handleGifSearch]);
+  }, [searchQuery, handleGifSearch, offset]);
 
   return (
     <MainViewWrapper>
@@ -50,9 +64,9 @@ const HomeScreen = () => {
         </Text>
       )}
 
-      {isLoaded && gifList?.length > 0 && <GifList list={gifList} />}
-
-      {/* Render your gif list or other components based on the API response */}
+      {isLoaded && gifList?.length > 0 && (
+        <GifList list={gifList} loadMore={loadMore} />
+      )}
     </MainViewWrapper>
   );
 };
